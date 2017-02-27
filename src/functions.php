@@ -43,22 +43,6 @@ function cfg($param = null) {
 }
 
 /**
- * Get DB Query
- * @param string $config
- * @return \Core\DalMysqlQuery
-*/
-function db($config = 'db') {
-    static $dbPool = [];
-    if(empty($dbPool[$config])) {
-        $cfg = cfg()->$config;
-        $dbPool[$config] = new \Core\DalMysqlQuery($cfg);
-    } else {
-        $dbPool[$config] = new \Core\DalMysqlQuery($dbPool[$config]);
-    }
-    return $dbPool[$config];
-}
-
-/**
  * Generate random base32 string
  * @param int $len Length (optional)
  * @return string
@@ -203,7 +187,7 @@ function mc($key, $value = false, $timeout = false) {
  * @param array $params
  * @return mixed
  */
-function get_path($url, $params = null) {
+function url($url, $params = null) {
     $url = cfg()->root_url . $url;
     $url = str_replace('//', '/', $url);
     if ($params) {
@@ -307,7 +291,7 @@ function ext_change($filename, $ext) {
  * pre print_r text and die
  * @param $text
  */
-function pre($text) {
+function pp($text) {
     echo '<pre>';
     print_r($text);
     exit();

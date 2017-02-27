@@ -1,11 +1,11 @@
 <?php
 
-namespace Core;
+namespace Dal;
 
 /**
  * Database classes generator
  */
-class DbGenerator {
+class ClassGenerator {
 
     var $dbConfig;
 
@@ -87,6 +87,5 @@ class DbGenerator {
             }
         }
     }
-
 
 }

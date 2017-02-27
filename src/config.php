@@ -6,13 +6,15 @@
 
 $cfg = new stdClass();
 
+$cfg->environment = 'dev';
+
 // Site
 $cfg->debug = false;
 $cfg->root_url = '/';
 $cfg->upload_url = $cfg->root_url . '/upload/';
 
 // Directories
-$cfg->tmp_dir = ROOT . '/tmp';
+$cfg->tmp_dir = '/tmp';
 $cfg->upload_dir = ROOT . '/www/upload';
 
 // Database

@@ -1,0 +1,17 @@
+{
+  "name": "zobaken/one",
+  "version": "0.0.1",
+  "description": "Simple PHP framework",
+  "type": "library",
+  "license": "MIT",
+  "require": {},
+  "autoload": {
+    "files": [
+      "src/init.php"
+    ],
+    "psr-4": {
+      "Core\\": "src/core/"
+      "Dal\\": "src/dal/"
+    }
+  }
+}

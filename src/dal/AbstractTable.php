@@ -1,25 +1,34 @@
 <?php
 
-namespace Core;
+namespace Dal;
 
 /**
  * Parent class for all database classes
  */
 class AbstractTable {
 
+    /** @var array Primary key */
+    static $pk;
+
+    /** @var  array Generated fields */
+    static $generated;
+
+    /** @var  string Table name */
+    static $table;
+
     /**
      * Insert object into database
      */
     function insert() {
         $this->generateFields();
-        self::queryInsertRow($this)->exec();
+        self::queryInsertRow((array)$this)->exec();
     }
 
     /**
      * Update object in database
      */
     function update() {
-        $q = self::queryUpdateRow($this);
+        $q = self::queryUpdateRow((array)$this);
         static::generateWhere($q, $this->getId());
         $q->exec();
     }
@@ -28,7 +37,7 @@ class AbstractTable {
      * Replace object in database
      */
     function replace() {
-        self::queryReplaceRow($this)->exec();
+        self::queryReplaceRow((array)$this)->exec();
     }
 
     /**
@@ -98,7 +107,7 @@ class AbstractTable {
     /**
      * Get object from database
      * @param mixed $id
-     * @return AbstractTable
+     * @return AbstractTable|\stdClass
      */
     static function get($id) {
         if (is_array($id)) $key = $id;
@@ -157,9 +166,9 @@ class AbstractTable {
     }
 
     /**
-     * Return DalMysqlQuery select query
+     * Return \Dal\MysqlQuery select query
      * @param string $what Columns to select
-     * @return DalMysqlQuery
+     * @return \Dal\MysqlQuery
      */
     static function querySelect($what = '*') {
         $table = static::$table;
@@ -170,41 +179,41 @@ class AbstractTable {
     }
 
     /**
-     * Return DalMysqlQuery delete query
-     * @return DalMysqlQuery
+     * Return \Dal\MysqlQuery delete query
+     * @return \Dal\MysqlQuery
      */
     static function queryDelete() {
         return db()->deleteFrom(static::$table);
     }
 
     /**
-     * Return DalMysqlQuery update query
-     * @return DalMysqlQuery
+     * Return \Dal\MysqlQuery update query
+     * @return \Dal\MysqlQuery
      */
     static function queryUpdate() {
         return  db()->update(static::$table);
     }
 
     /**
-     * Return DalMysqlQuery replace
-     * @return DalMysqlQuery
+     * Return \Dal\MysqlQuery replace
+     * @return \Dal\MysqlQuery
      */
     static function queryReplace() {
         return db()->replace(static::$table);
     }
 
     /**
-     * Return DalMysqlQuery insert query
-     * @return DalMysqlQuery
+     * Return \Dal\MysqlQuery insert query
+     * @return \Dal\MysqlQuery
      */
     static function queryInsert() {
         return  db()->insertInto(static::$table);
     }
 
     /**
-     * Return DalMysqlQuery update query with values assignment
+     * Return \Dal\MysqlQuery update query with values assignment
      * @param array $fields affected fields
-     * @return DalMysqlQuery
+     * @return \Dal\MysqlQuery
      */
     static function queryUpdateRow($fields) {
         $db = db()->update(static::$table);
@@ -216,9 +225,9 @@ class AbstractTable {
     }
 
     /**
-     * Return DalMysqlQuery replace query with values assignment
+     * Return \Dal\MysqlQuery replace query with values assignment
      * @param array $fields affected fields
-     * @return DalMysqlQuery
+     * @return \Dal\MysqlQuery
      */
     static function queryReplaceRow($fields) {
         $db = db()->replace(static::$table);
@@ -230,9 +239,9 @@ class AbstractTable {
     }
 
     /**
-     * Return DalMysqlQuery insert query
+     * Return \Dal\MysqlQuery insert query
      * @param array $fields affected fields
-     * @return DalMysqlQuery
+     * @return \Dal\MysqlQuery
      */
     static function queryInsertRow($fields) {
         $db = db()->insertInto(static::$table);
@@ -245,9 +254,9 @@ class AbstractTable {
 
     /**
      * Generate where statement
-     * @param DalMysqlQuery $db
-     * @param array $key Values for primary key
-     * @return DalMysqlQuery
+     * @param \Dal\MysqlQuery $db
+     * @param array|string $key Values for primary key
+     * @return \Dal\MysqlQuery
      */
     static function generateWhere($db, $key) {
         $key = (array)$key;

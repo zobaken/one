@@ -4,21 +4,24 @@
  * Bootstrap
  */
 
-session_start();
+if (!defined('ROOT')) {
+    throw new Exception('ROOT constant should be defined');
+}
 
-define('ROOT', realpath(__DIR__ . '/../'));
+if (PHP_SAPI !== 'cli') {
+    session_start();
+}
 
-define('MINUTE', 60);
-define('HOUR', 60 * 60);
-define('DAY', 60 * 60 * 24);
+define('CORE', realpath(__DIR__));
 
-require_once(ROOT . '/inc/config.php');
+require_once(CORE . '/inc/config.php');
 $configLocal = ROOT . '/inc/config_local.php';
 if (!file_exists($configLocal)) {
     throw new Exception($configLocal . ' not found');
 }
 require_once($configLocal);
-require_once(ROOT . '/inc/functions.php');
+require_once(CORE . '/inc/functions.php');
+require_once(CORE . '/inc/dal.php');
 
 spl_autoload_register('__autoload');
 
