@@ -5,12 +5,12 @@ namespace Dal;
 /**
  * Database classes generator
  */
-class ClassGenerator {
+class ModelGenerator {
 
-    var $dbConfig;
+    var $profile;
 
-    function __construct($dbConfig = 'db') {
-        $this->dbConfig = $dbConfig;
+    function __construct($profile = 'default') {
+        $this->profile = $profile;
     }
 
     function getTableClassName($tableName) {
@@ -41,13 +41,14 @@ class ClassGenerator {
     }
 
     function run() {
-        $dbCfg = cfg($this->dbConfig);
-        $tables = db($this->dbConfig)->query("SHOW TABLES FROM `{$dbCfg->dbname}`")->fetchAllArray();
+        $databaseConfig = \Core\Config::load('database');
+        $config = $databaseConfig->{$this->profile};
+        $tables = db($this->profile)->query("SHOW TABLES FROM `{$config->dbname}`")->fetchAllArray();
 
         foreach($tables as $tc){
             $tableName = $tc[0];
             echo "Working on {$tableName}\n";
-            $tableInfo = db($this->dbConfig)->query("SHOW FULL COLUMNS FROM {$tableName}")->fetchAllAssoc();
+            $tableInfo = db($this->profile)->query("SHOW FULL COLUMNS FROM {$tableName}")->fetchAllAssoc();
             $tableClassName = $this->getTableClassName($tableName);
             $className = $this->getClassName($tableName);
             $pk = [];
@@ -65,20 +66,28 @@ class ClassGenerator {
                 }
             }
 
-            $namespace = ucfirst($this->dbConfig);
+            if (isset($config->namespace)) {
+                $namespace = $config->namespace;
+                $namespacePath = explode('\\', $namespace);
+                $namespacePath[0] = strtolower($namespacePath[0]);
+                $namespacePath = implode('/', $namespacePath);
+            } else {
+                $namespace = null;
+                $namespacePath = 'classes';
+            }
 
             ob_start();
-            require ROOT . '/inc/dbgen/table-class.tpl';
+            require DAL . '/resources/dbgen/table-class.tpl';
             $tableClassContent = sprintf("<?php \n\n%s", ob_get_clean());
-            $tableClassPath = ROOT . '/classes/' . $this->dbConfig . '/table/' . $tableClassName . '.php';
-            $classPath = ROOT . '/classes/' . $this->dbConfig . '/' . $className . '.php';
+            $tableClassPath = ROOT . "/$namespacePath/Table/$tableClassName.php";
+            $classPath = ROOT . "/$namespacePath/$className.php";
             if (!is_dir(dirname($tableClassPath))) {
                 mkdir(dirname($tableClassPath), 0755, true);
             }
             file_put_contents($tableClassPath, $tableClassContent);
             if (!file_exists($classPath)) {
                 ob_start();
-                require ROOT . '/inc/dbgen/class.tpl';
+                require DAL . '/resources/dbgen/class.tpl';
                 $classContent = sprintf("<?php \n\n%s", ob_get_clean());
                 if (!is_dir(dirname($classPath))) {
                     mkdir(dirname($classPath), 0755, true);
@@ -86,6 +95,8 @@ class ClassGenerator {
                 file_put_contents($classPath, $classContent);
             }
         }
+
+        echo "Done\n";
     }
 
 }

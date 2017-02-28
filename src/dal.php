@@ -1,17 +1,22 @@
 <?php
 
 /**
- * Get DB Query
- * @param string $config
+ * Get database query.
+ * Expects configuration file at ROOT/config/database.json.
+ * @param string $profile
  * @return \Dal\MysqlQuery
+ * @throws \Dal\Exception
  */
-function db($config = 'db') {
+function db($profile = 'default') {
     static $dbPool = [];
-    if(empty($dbPool[$config])) {
-        $cfg = cfg()->$config;
-        $dbPool[$config] = new \Core\DalMysqlQuery($cfg);
+    if(empty($dbPool[$profile])) {
+        $configuration = \Core\Config::load('database');
+        if (!$configuration->$profile) {
+            throw new \Dal\Exception('Configuration not found: ' . $profile);
+        }
+        $dbPool[$profile] = new \Dal\MysqlQuery($configuration->$profile);
     } else {
-        $dbPool[$config] = new \Core\DalMysqlQuery($dbPool[$config]);
+        $dbPool[$profile] = new \Dal\MysqlQuery($dbPool[$profile]);
     }
-    return $dbPool[$config];
+    return $dbPool[$profile];
 }

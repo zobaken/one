@@ -10,7 +10,7 @@
       "src/init.php"
     ],
     "psr-4": {
-      "Core\\": "src/core/"
+      "Core\\": "src/core/",
       "Dal\\": "src/dal/"
     }
   }

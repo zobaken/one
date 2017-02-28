@@ -4,40 +4,16 @@
  * Basic functions
  */
 
-
 /**
- * Autoload class
- * @param string $className
- */
-function __autoload($className) {
-
-    if (substr_count($className, '\\')) {
-        $path = explode('\\', $className);
-        $classLastName = $path[count($path) - 1];
-        unset($path[count($path) - 1]);
-        array_walk($path, function(&$a) {
-            $a = strtolower($a);
-        });
-        $classPath = ROOT . '/classes/' . implode('/', $path) . '/' . $classLastName . '.php';
-    } else {
-        $classPath = ROOT . '/classes/' . $className . '.php';
-    }
-
-
-    if(file_exists($classPath)){
-        include_once($classPath);
-    }
-}
-
-/**
- * Get configuration
+ * Get configuration option
+ * Expects configuration file at ROOT/config/app.json.
  * @return stdClass
  */
 function cfg($param = null) {
     static $config;
     if (!$config) $config = new \Core\Config();
     if ($param) {
-        return $config->$param;
+        return $config->get($param);
     }
     return $config;
 }
@@ -329,4 +305,20 @@ function column($array, $field) {
         }
     }
     return $res;
+}
+
+/**
+ * Dump arguments and die
+ * @param array ...$arguments
+ */
+function dd($arguments) {
+    $arguments = func_get_args();
+    if (PHP_SAPI != 'cli') {
+        echo '<pre/>';
+    }
+    foreach ($arguments as $arg) {
+        //echo json_encode($arg, JSON_PRETTY_PRINT);
+        print_r($arg);
+    }
+    exit(1);
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace Core;
+namespace Dal;
 
 /**
  * Database exception
  */
-class DalException extends \Exception {}
+class Exception extends \Exception {}
