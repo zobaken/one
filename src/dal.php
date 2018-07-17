@@ -10,7 +10,7 @@
 function db($profile = 'default') {
     static $dbPool = [];
     if(empty($dbPool[$profile])) {
-        $configuration = \Core\Config::load('database');
+        $configuration = \Core\ConfigStore::load('database');
         if (!$configuration->$profile) {
             throw new \Dal\Exception('Configuration not found: ' . $profile);
         }

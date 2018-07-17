@@ -7,11 +7,18 @@
 /**
  * Get configuration option
  * Expects configuration file at ROOT/config/app.json.
- * @return stdClass
+ * @return \Core\ConfigStore
  */
 function cfg($param = null) {
     static $config;
-    if (!$config) $config = new \Core\Config();
+    if (!$config) {
+        $config = new \Core\ConfigStore('app');
+        if ($config->environment) {
+            $defaults = $config;
+            $config = new \Core\ConfigStore($config->environment);
+            $config->setDefaults($defaults);
+        }
+    }
     if ($param) {
         return $config->get($param);
     }

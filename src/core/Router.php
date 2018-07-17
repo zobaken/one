@@ -8,35 +8,41 @@ namespace Core;
 class Router {
 
     static function route($path) {
-        $className = null;
-        while ($path[strlen($path) - 1] == '/') {
-            if ($path == '/') {
-                $className = '\Ctl\Main';
-                break;
-            }
+        $routes = ConfigStore::load('routes');
+        while (strlen($path) > 1 && $path[strlen($path) - 1] == '/') {
             $path = substr($path, 0, strlen($path) - 1);
         }
-        if (!$className) {
-            $pathArray = explode('/', $path);
-            array_walk($pathArray, function (&$a) {
-                $a = ucfirst($a);
-            });
-            $className = '\\Ctl' . implode('\\', $pathArray);
+        $className = $routes->get($path);
+        if ($className) {
+            $className = str_replace('/', '\\', $className);
+            if (!class_exists($className)) {
+                $className = '\\Ctl\\' . $className;
+            }
+        } else  {
+            if (cfg('auto_routes')) {
+                $pathArray = explode('/', $path);
+                array_walk($pathArray, function (&$a) {
+                    $a = ucfirst($a);
+                });
+                $className = '\\Ctl' . implode('\\', $pathArray);
+            }
         }
-        if (!class_exists($className)) {
-            header('Status: 404 Not Found');
-            require tpl('service/404');
-            return;
+        if (class_exists($className)) {
+            $controller = new $className($path);
+        } else {
+            $controller = new Ctl\HttpError($path, 404);
         }
-        $controller = new $className($path);
         $controller->serve();
     }
 
     static function dispatchHttp() {
-        $requestUrl = $_SERVER['REQUEST_URI'];
-        $path_len = strlen($requestUrl) - strlen(cfg()->root_url) + 1;
-        if (strlen($_SERVER['QUERY_STRING'])) $path_len -= strlen($_SERVER['QUERY_STRING']) + 1;
-        $path = substr($requestUrl, strlen(cfg()->root_url) - 1, $path_len);
+        if (empty($_SERVER['PATH_INFO'])) {
+            throw new \Core\ResponseException('Path not found');
+        }
+        $path = $_SERVER['PATH_INFO'];
+        if (cfg()->root_url) {
+            $path = substr($path, strlen(cfg()->root_url) - 1);
+        }
         try {
             static::route($path);
         } catch (\Exception $e) {

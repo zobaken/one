@@ -41,7 +41,7 @@ class ModelGenerator {
     }
 
     function run() {
-        $databaseConfig = \Core\Config::load('database');
+        $databaseConfig = \Core\ConfigStore::load('database');
         $config = $databaseConfig->{$this->profile};
         $tables = db($this->profile)->query("SHOW TABLES FROM `{$config->dbname}`")->fetchAllArray();
 
