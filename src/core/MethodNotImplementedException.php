@@ -8,6 +8,6 @@ namespace Core;
 class MethodNotImplementedException extends \RuntimeException {
 
     function __construct() {
-        parent::__construct('Method not implemented');
+        parent::__construct('Method not implemented', 404);
     }
 }

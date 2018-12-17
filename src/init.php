@@ -13,13 +13,11 @@ if (PHP_SAPI !== 'cli') {
 }
 
 define('CORE', realpath(__DIR__));
-define('DAL', realpath(__DIR__));
 
 require_once(CORE . '/functions.php');
-require_once(CORE . '/dal.php');
 require_once(CORE . '/autoload.php');
 
-spl_autoload_register('core_autoload');
+//spl_autoload_register('core_autoload');
 
 if (cfg('debug')) {
     error_reporting(E_ALL | E_STRICT);

@@ -26,27 +26,6 @@ function cfg($param = null) {
 }
 
 /**
- * Generate random base32 string
- * @param int $len Length (optional)
- * @return string
- */
-function uid($len = 24) {
-    $res = '';
-    while(strlen($res) < $len) {
-        $res .= base_convert(mt_rand(), 10, 32);
-    }
-    return substr($res, 0, $len);
-}
-
-/**
- * Generate random integer
- * @return int
- */
-function uint() {
-    return mt_rand() << 16 | time();
-}
-
-/**
  * Get template filename
  * @param string $name
  * @return string
@@ -100,30 +79,6 @@ function jse($str) {
  */
 function hte($str) {
     return htmlspecialchars($str);
-}
-
-/**
- * Return time in database format
- * @param mixed $time Integer time or string date of nothing (for current time)
- * @return string
- */
-function dbtime($time = false) {
-    if (is_string($time)) {
-        $time = strtotime($time);
-    }
-    return $time ? date('Y-m-d H:i:s', $time) : date('Y-m-d H:i:s');
-}
-
-/**
- * Return date in database format
- * @param mixed $time Integer time or string date of nothing (for current time)
- * @return string
- */
-function dbdate($time = false) {
-    if (is_string($time)) {
-        $time = strtotime($time);
-    }
-    return $time ? date('Y-m-d', $time) : date('Y-m-d');
 }
 
 /**
@@ -278,40 +233,6 @@ function pp($text) {
     echo '<pre>';
     print_r($text);
     exit();
-}
-
-/**
- * Get associative array of objects
- * @param array $array Array of objects
- * @param string $key Object property used for array key
- * @return array
- */
-function associate($array, $key) {
-    $result = [];
-    foreach ($array as $obj) {
-        if (!isset($obj->$key))
-            continue;
-        if ($obj->$key === null)
-            continue;
-        $result[$obj->$key] = $obj;
-    }
-    return $result;
-}
-
-/**
- * Get array of fields from array of objects
- * @param array $array
- * @param string $field
- * @return array
- */
-function column($array, $field) {
-    $res = array();
-    foreach ($array as $r) {
-        if (!empty($r->$field)) {
-            $res []= $r->$field;
-        }
-    }
-    return $res;
 }
 
 /**

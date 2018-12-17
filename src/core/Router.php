@@ -30,29 +30,20 @@ class Router {
         if (class_exists($className)) {
             $controller = new $className($path);
         } else {
-            $controller = new Ctl\HttpError($path, 404);
+            throw new PageNotFoundException();
         }
         $controller->serve();
     }
 
     static function dispatchHttp() {
         if (empty($_SERVER['PATH_INFO'])) {
-            throw new \Core\ResponseException('Path not found');
+            $path = '/';
+        } else {
+            $path = $_SERVER['PATH_INFO'];
         }
-        $path = $_SERVER['PATH_INFO'];
         if (cfg()->root_url) {
             $path = substr($path, strlen(cfg()->root_url) - 1);
         }
-        try {
-            static::route($path);
-        } catch (\Exception $e) {
-            if (cfg()->debug) {
-                $error = $e->getMessage();
-                $trace = $e->getTraceAsString();
-                require tpl('debug/error');
-            } else {
-                require tpl('service/error');
-            }
-        }
+        static::route($path);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-$http_status_codes = array(
+return array(
     100 => 'Continue',
     101 => 'Switching Protocols',
     102 => 'Processing',

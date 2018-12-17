@@ -7,13 +7,16 @@ namespace Core;
  */
 class Controller {
 
-    var $path;
+    protected static $routes = [];
+    protected $path;
+    protected $view;
 
-    function __construct($path) {
+    function __construct($path = null) {
         $this->path = $path;
     }
 
     function getMethodBase() {
+        if (!$this->path) return '';
         foreach (static::$routes as $regexp => $base) {
             if (!$regexp) continue;
             if (preg_match("#$regexp#", $this->path)) {
@@ -38,9 +41,23 @@ class Controller {
             $method = "delete$methodBase";
         }
         if (method_exists($this, $method)) {
-            call_user_func([$this, $method]);
+            $result = call_user_func([$this, $method]);
+            if (is_null($result)) {
+                $result = $this->getPublicProperties();
+            }
+            $this->render($result);
         } else {
-            throw new MethodNotImplementedException();
+            throw new PageNotFoundException();
+        }
+    }
+
+    function render(array $parameters = []) {
+        if ($this->view) {
+            $template = \Core\Template::getAdapter();
+            echo $template->run($this->view, $parameters);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($parameters);
         }
     }
 
@@ -49,24 +66,33 @@ class Controller {
         return $default;
     }
 
+    function getPublicProperties() {
+        $reflection = new \ReflectionClass($this);
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+        $static = $reflection->getProperties(\ReflectionProperty::IS_STATIC);
+        $properties = array_diff($properties, $static);
+        $result = [];
+        foreach ($properties as $p) {
+            $result [$p->name] = $this->{$p->name};
+        }
+        return $result;
+    }
+
     function get() {
-        throw new MethodNotImplementedException();
+        throw new PageNotFoundException();
     }
 
     function post() {
-        throw new MethodNotImplementedException();
+        throw new PageNotFoundException();
     }
 
     function put() {
-        throw new MethodNotImplementedException();
+        throw new PageNotFoundException();
     }
 
     function delete() {
-        throw new MethodNotImplementedException();
+        throw new PageNotFoundException();
     }
 
-    static $routes = [];
-
-    static function init() {}
-
+    protected static function init() {}
 }

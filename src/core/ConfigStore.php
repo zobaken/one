@@ -18,6 +18,16 @@ class ConfigStore extends Store {
         }
     }
 
+    function get($key) {
+        $result = parent::get($key);
+        if (is_array($result)) {
+            $store = new Store();
+            $store->items = $result;
+            return $store;
+        }
+        return $result;
+    }
+
     static function load($domain) {
         if (empty(static::$pool[$domain])) {
             static::$pool[$domain] = new self($domain);
