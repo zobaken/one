@@ -1,6 +1,7 @@
 <?php
 
 namespace Core;
+use Dal\Exception;
 
 /**
  * Basic controller
@@ -9,26 +10,40 @@ class Controller {
 
     protected static $routes = [];
     protected $path;
+    protected $segments;
     protected $view;
 
-    function __construct($path = null) {
+    function __construct($path = null, $segments = []) {
         $this->path = $path;
+        $this->segments = $segments;
     }
 
     function getMethodBase() {
-        if (!$this->path) return '';
+        if (!$this->segments) {
+            return null;
+        }
         foreach (static::$routes as $regexp => $base) {
             if (!$regexp) continue;
-            if (preg_match("#$regexp#", $this->path)) {
-                return $base;
+            if (preg_match("#$regexp#", $this->segments, $m)) {
+                $params = array_slice($m, 1);
+                $params = array_map(function($value) {
+                    return trim($value, '/');
+                }, $params);
+                return [ ucfirst($base), $params ];
             }
         }
-        return '';
+        return null;
     }
 
     function serve() {
-        static::init();
-        $methodBase = $this->getMethodBase();
+        $methodBase = '';
+        $parameters = [];
+        if ($this->segments) {
+            list($methodBase, $parameters) = $this->getMethodBase();
+            if (!$methodBase) {
+                throw new PageNotFoundException();
+            }
+        }
         $method = null;
 
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
@@ -41,9 +56,10 @@ class Controller {
             $method = "delete$methodBase";
         }
         if (method_exists($this, $method)) {
-            $result = call_user_func([$this, $method]);
+            $this->init();
+            $result = call_user_func_array([$this, $method], $parameters);
             if (is_null($result)) {
-                $result = $this->getPublicProperties();
+                $result = $this->getProperties();
             }
             $this->render($result);
         } else {
@@ -53,7 +69,7 @@ class Controller {
 
     function render(array $parameters = []) {
         if ($this->view) {
-            $template = \Core\Template::getAdapter();
+            $template = Template::getAdapter();
             echo $template->run($this->view, $parameters);
         } else {
             header('Content-Type: application/json');
@@ -66,14 +82,14 @@ class Controller {
         return $default;
     }
 
-    function getPublicProperties() {
+    function getProperties() {
         $reflection = new \ReflectionClass($this);
-        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
-        $static = $reflection->getProperties(\ReflectionProperty::IS_STATIC);
-        $properties = array_diff($properties, $static);
+        $properties = (array) $this;
         $result = [];
-        foreach ($properties as $p) {
-            $result [$p->name] = $this->{$p->name};
+        foreach ($properties as $key => $value) {
+            if (preg_match('/^[\w\d\_]+$/', $key)) {
+                $result[$key] = $value;
+            }
         }
         return $result;
     }

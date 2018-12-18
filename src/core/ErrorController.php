@@ -35,7 +35,7 @@ class ErrorController extends Controller {
 
     function serve() {
         static::init();
-        $result = $this->getPublicProperties();
+        $result = $this->getProperties();
         $this->render($result);
     }
 
