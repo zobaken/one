@@ -4,12 +4,20 @@ namespace Core;
 
 /**
  * Configuration wrapper
+ * @package Core
  */
 class ConfigStore extends Store {
 
+    /**
+     * @var array
+     */
     static $pool = [];
 
-    function __construct($domain) {
+    /**
+     * ConfigStore constructor.
+     * @param string @domain
+     */
+    function __construct(string $domain) {
         $fileName = ROOT . '/config/' . $domain . '.json';
         $fileName = str_replace('/', DIRECTORY_SEPARATOR, $fileName);
         if (file_exists($fileName)) {
@@ -18,7 +26,11 @@ class ConfigStore extends Store {
         }
     }
 
-    function get($key) {
+    /**
+     * @param string $key
+     * @return Store|mixed|null
+     */
+    function get(string $key) {
         $result = parent::get($key);
         if (is_array($result)) {
             $store = new Store();
@@ -28,7 +40,11 @@ class ConfigStore extends Store {
         return $result;
     }
 
-    static function load($domain) {
+    /**
+     * @param string $domain
+     * @return mixed
+     */
+    static function load(string $domain) {
         if (empty(static::$pool[$domain])) {
             static::$pool[$domain] = new self($domain);
         }

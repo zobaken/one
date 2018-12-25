@@ -1,51 +1,30 @@
 <?php
 
 namespace Core;
-use Dal\Exception;
 
 /**
  * Basic controller
+ * @package Core
  */
 class Controller {
 
+    /**
+     * @var array Controller defined routes
+     */
     protected static $routes = [];
-    protected $path;
-    protected $segments;
+
+    /**
+     * @var string Controller view (template) path
+     */
     protected $view;
 
-    function __construct($path = null, $segments = []) {
-        $this->path = $path;
-        $this->segments = $segments;
-    }
-
-    function getMethodBase() {
-        if (!$this->segments) {
-            return null;
-        }
-        foreach (static::$routes as $regexp => $base) {
-            if (!$regexp) continue;
-            if (preg_match("#$regexp#", $this->segments, $m)) {
-                $params = array_slice($m, 1);
-                $params = array_map(function($value) {
-                    return trim($value, '/');
-                }, $params);
-                return [ ucfirst($base), $params ];
-            }
-        }
-        return null;
-    }
-
-    function serve() {
-        $methodBase = '';
-        $parameters = [];
-        if ($this->segments) {
-            list($methodBase, $parameters) = $this->getMethodBase();
-            if (!$methodBase) {
-                throw new PageNotFoundException();
-            }
-        }
-        $method = null;
-
+    /**
+     * Run the controller
+     * @param string|null $methodBase
+     * @param array $parameters
+     * @throws \Exception
+     */
+    function serve(string $methodBase = null, array $parameters = []) {
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $method = "get$methodBase";
         } elseif($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -63,25 +42,40 @@ class Controller {
             }
             $this->render($result);
         } else {
-            throw new PageNotFoundException();
+            throw new MethodNotImplementedException();
         }
     }
 
-    function render(array $parameters = []) {
+    /**
+     * Render from controller properties
+     * @param array $properties
+     */
+    function render(array $properties = []) {
         if ($this->view) {
             $template = Template::getAdapter();
-            echo $template->run($this->view, $parameters);
+            echo $template->run($this->view, $properties);
         } else {
             header('Content-Type: application/json');
-            echo json_encode($parameters);
+            echo json_encode($properties);
         }
     }
 
-    function param($name, $default = null) {
+    /**
+     * Get request parameters
+     * @param string $name
+     * @param mixed $default
+     * @return null
+     */
+    protected function param(string $name, $default = null) {
         if (isset($_REQUEST[$name])) return $_REQUEST[$name];
         return $default;
     }
 
+    /**
+     * Get public properties
+     * @return array
+     * @throws \ReflectionException
+     */
     function getProperties() {
         $reflection = new \ReflectionClass($this);
         $properties = (array) $this;
@@ -94,21 +88,36 @@ class Controller {
         return $result;
     }
 
+    /**
+     * Stub
+     */
     function get() {
         throw new PageNotFoundException();
     }
 
+    /**
+     * Stub
+     */
     function post() {
         throw new PageNotFoundException();
     }
 
+    /**
+     * Stub
+     */
     function put() {
         throw new PageNotFoundException();
     }
 
+    /**
+     * Stub
+     */
     function delete() {
         throw new PageNotFoundException();
     }
 
-    protected static function init() {}
+    /**
+     * Init controller
+     */
+    protected function init() {}
 }
